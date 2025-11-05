@@ -130,7 +130,7 @@ exports.handler = async (event, context) => {
       analyticsDataClient.runReport({
         property: `properties/${propertyId}`,
         dateRanges: [{
-          startDate: '6monthsAgo',
+          startDate: '180daysAgo',  // Approximately 6 months
           endDate: 'today',
         }],
         dimensions: [
