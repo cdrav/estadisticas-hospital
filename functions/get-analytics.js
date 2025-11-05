@@ -40,7 +40,15 @@ exports.handler = async (event, context) => {
     const formatDate = (date) => date.toISOString().split('T')[0];
     
     // Fetch data from Google Analytics 4
-    const [totalVisitsResponse, monthlyVisitsResponse, topPagesResponse, devicesResponse, browsersResponse] = await Promise.all([
+    const [
+      totalVisitsResponse, 
+      monthlyVisitsResponse, 
+      topPagesResponse, 
+      devicesResponse, 
+      browsersResponse,
+      dailyVisitsResponse,
+      monthlyTrendResponse
+    ] = await Promise.all([
       // Total visits
       analyticsDataClient.runReport({
         property: `properties/${propertyId}`,
@@ -102,6 +110,38 @@ exports.handler = async (event, context) => {
           desc: true,
           metric: { metricName: 'sessions' }
         }]
+      }),
+      
+      // Daily visits (last 30 days)
+      analyticsDataClient.runReport({
+        property: `properties/${propertyId}`,
+        dateRanges: [{
+          startDate: '30daysAgo',
+          endDate: 'today',
+        }],
+        dimensions: [{ name: 'date' }],
+        metrics: [{ name: 'totalUsers' }],
+        orderBys: [{
+          dimension: { dimensionName: 'date' }
+        }]
+      }),
+      
+      // Monthly trend (last 6 months)
+      analyticsDataClient.runReport({
+        property: `properties/${propertyId}`,
+        dateRanges: [{
+          startDate: '6monthsAgo',
+          endDate: 'today',
+        }],
+        dimensions: [
+          { name: 'year' },
+          { name: 'month' }
+        ],
+        metrics: [{ name: 'totalUsers' }],
+        orderBys: [
+          { dimension: { dimensionName: 'year' } },
+          { dimension: { dimensionName: 'month' } }
+        ]
       })
     ]);
     
@@ -125,6 +165,23 @@ exports.handler = async (event, context) => {
       browsers[row.dimensionValues[0].value] = parseInt(row.metricValues[0].value);
     });
     
+    // Process daily visits
+    const dailyVisits = dailyVisitsResponse[0].rows?.map(row => ({
+      date: row.dimensionValues[0].value,
+      visits: parseInt(row.metricValues[0].value || '0')
+    })) || [];
+
+    // Process monthly trend
+    const monthlyTrend = monthlyTrendResponse[0].rows?.map(row => {
+      const year = parseInt(row.dimensionValues[0].value);
+      const month = parseInt(row.dimensionValues[1].value) - 1; // Ajuste para índice de mes (0-11)
+      const monthName = new Date(year, month).toLocaleString('es-ES', { month: 'short' });
+      return {
+        period: `${monthName} ${year}`,
+        visits: parseInt(row.metricValues[0].value || '0')
+      };
+    }) || [];
+    
     // Prepare the response data
     const data = {
       totalVisits,
@@ -132,6 +189,8 @@ exports.handler = async (event, context) => {
       topPages,
       devices,
       browsers,
+      dailyVisits,
+      monthlyTrend,
       lastUpdate: now.toISOString()
     };
 
