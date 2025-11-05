@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_URL = '/.netlify/functions/get-analytics';
+  const API_URL = 'https://aesthetic-hotteok-de9d99.netlify.app/.netlify/functions/get-analytics';
 
   const loadingEl = document.getElementById('loading');
   const errorEl = document.getElementById('errorMessage');
