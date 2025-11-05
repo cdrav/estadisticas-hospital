@@ -149,7 +149,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Función principal para obtener y renderizar los datos
   const fetchAndRenderAnalytics = async () => {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        credentials: 'omit'
+      });
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.details || `El servidor respondió con el estado ${response.status}`);

@@ -4,9 +4,13 @@ const { JWT } = require('google-auth-library');
 // CORS headers configuration
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://www.hdsa.gov.co',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Expires, Pragma, Cache-Control',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Max-Age': '86400', // 24 hours
+  'Content-Type': 'application/json; charset=utf-8',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'X-Content-Type-Options': 'nosniff'
 };
 
 // Initialize the GA4 client
